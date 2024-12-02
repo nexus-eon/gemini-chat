@@ -1,0 +1,31 @@
+src/gemini_chat/config.py:26: error: Missing named argument "temperature" for "GenerationConfig" [call-arg]
+src/gemini_chat/config.py:26: error: Missing named argument "top_p" for "GenerationConfig" [call-arg]
+src/gemini_chat/config.py:26: error: Missing named argument "top_k" for "GenerationConfig" [call-arg]
+src/gemini_chat/config.py:26: error: Missing named argument "max_output_tokens" for "GenerationConfig" [call-arg]
+src/gemini_chat/config.py:33: error: Missing named argument "gemini_api_key" for "Settings" [call-arg]
+
+src/gemini_chat/chat.py:4: error: Skipping analyzing "google.generativeai": module is installed, but missing library stubs or py.typed marker [import-untyped]
+src/gemini_chat/chat.py:4: error: Skipping analyzing "google": module is installed, but missing library stubs or py.typed marker [import-untyped]
+src/gemini_chat/chat.py:22: error: Call to untyped function "_create_chat" in typed context [no-untyped-call]
+src/gemini_chat/chat.py:28: error: Function is missing a return type annotation [no-untyped-def]
+src/gemini_chat/chat.py:42: error: Returning Any from function declared to return "str" [no-any-return]
+
+src/gemini_chat/cli.py:19: error: Function is missing a return type annotation [no-untyped-def]
+src/gemini_chat/cli.py:27: error: Function is missing a return type annotation [no-untyped-def]
+src/gemini_chat/cli.py:42: error: Function is missing a return type annotation [no-untyped-def]
+src/gemini_chat/cli.py:49: error: Argument 1 to "make_filtering_bound_logger" has incompatible type "str"; expected "int" [arg-type]
+
+Summary of issues:
+1. Config module:
+   - GenerationConfig needs default arguments
+   - Settings needs gemini_api_key argument
+
+2. Chat module:
+   - Missing type stubs for google packages
+   - Missing return type annotations
+   - Untyped function calls
+   - Any return type issue
+
+3. CLI module:
+   - Missing return type annotations
+   - Type mismatch in logger configuration
