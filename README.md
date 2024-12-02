@@ -1,9 +1,10 @@
 # Gemini Chat Application
 
-A modern, interactive chat application using Google's Gemini AI model.
+A modern, interactive chat application using Google's Gemini AI model, featuring both CLI and web interfaces.
 
 ## Features
 
+- 🌐 Modern web interface with real-time chat
 - 🚀 Modern Python packaging with `pyproject.toml`
 - 🔒 Secure environment variable handling
 - 📝 Rich terminal output with markdown support
@@ -11,49 +12,61 @@ A modern, interactive chat application using Google's Gemini AI model.
 - 📊 Structured logging
 - 🖥️ User-friendly CLI interface
 - ⚡ Async-ready architecture
+- 🔄 Rate limit handling and user feedback
+- 🐛 Comprehensive error handling and logging
 
 ## Prerequisites
 
-- Python 3.9 or higher
-- PDM (Python package manager)
+- Python 3.12 or higher
+- Virtual environment
 
 ## Installation
 
 ### 1. Create and activate a virtual environment
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # On Unix/macOS
+python -m venv venv
+source venv/bin/activate  # On Unix/macOS
 # or
-.venv\Scripts\activate  # On Windows
+venv\Scripts\activate  # On Windows
 ```
 
-### 2. Install PDM if you haven't already
+### 2. Install the package in editable mode
 
 ```bash
-pip install pdm
+pip install -e .
 ```
 
-### 3. Install the project dependencies
+### 3. Set up your environment
+
+Create a `.env` file with the following content:
 
 ```bash
-pdm install
+GEMINI_API_KEY=your_api_key_here
+MODEL_NAME=gemini-exp-1121
+LOG_LEVEL=INFO
 ```
 
-### 4. Set up your environment
-
-```bash
-cp .env.example .env
-```
-
-Then edit `.env` and add your Gemini API key.
+Replace `your_api_key_here` with your actual Gemini API key.
 
 ## Usage
 
-Start the chat application:
+### Web Interface
+
+Start the web interface:
 
 ```bash
-pdm run python -m gemini_chat.cli chat
+python -m gemini_chat web
+```
+
+Then open http://localhost:5000 in your browser.
+
+### CLI Interface
+
+Start the CLI chat application:
+
+```bash
+python -m gemini_chat chat
 ```
 
 Options:
@@ -65,28 +78,57 @@ Options:
 
 This project uses modern Python development tools:
 
-- **PDM**: Dependency management
-- **Ruff**: Fast Python linter
-- **Black**: Code formatting
-- **isort**: Import sorting
-- **Pydantic**: Data validation
+- **Flask**: Web framework
+- **Pydantic**: Data validation and settings management
 - **Typer**: CLI interface
 - **Rich**: Terminal formatting
 - **structlog**: Structured logging
+- **mypy**: Static type checking
 
 ### Development Commands
 
 ```bash
-# Format code
-pdm run black .
-pdm run isort .
+# Run type checking
+mypy src/gemini_chat
 
-# Lint code
-pdm run ruff check .
+# Install in development mode
+pip install -e .
 
-# Run tests (when added)
-pdm run pytest
+# Run the web interface in debug mode
+python -m gemini_chat web --debug
 ```
+
+## Project Structure
+
+```
+gemini_chat/
+├── src/
+│   └── gemini_chat/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── cli.py          # CLI implementation
+│       ├── web.py         # Web interface
+│       ├── chat.py        # Core chat functionality
+│       ├── config.py      # Configuration management
+│       ├── static/        # Web static files
+│       │   ├── script.js
+│       │   └── style.css
+│       └── templates/     # Web templates
+│           └── index.html
+├── .env                  # Environment variables
+├── .gitignore
+├── README.md
+└── setup.py             # Package configuration
+```
+
+## Error Handling
+
+The application includes comprehensive error handling for:
+- Rate limiting from the Gemini API
+- Network issues
+- Invalid API keys
+- Malformed requests
+- Server errors
 
 ## License
 

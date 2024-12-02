@@ -18,26 +18,47 @@ class ChatSession:
     def __init__(self, settings: Optional[Settings] = None) -> None:
         """Initialize chat session."""
         self.settings = settings or get_settings()
+        logger.debug("initializing_chat_session", 
+                    model_name=self.settings.model_name,
+                    api_key_length=len(self.settings.gemini_api_key) if self.settings.gemini_api_key else 0)
         self._setup_gemini()
         self.chat: Any = self._create_chat()
         
     def _setup_gemini(self) -> None:
         """Configure Gemini with API key and generation settings."""
-        genai.configure(api_key=self.settings.gemini_api_key)
+        try:
+            genai.configure(api_key=self.settings.gemini_api_key)
+            logger.debug("gemini_configured")
+        except Exception as e:
+            logger.error("gemini_configuration_error", error=str(e))
+            raise
         
     def _create_chat(self) -> Any:
         """Create and return a new chat session."""
-        model = genai.GenerativeModel(
-            model_name=self.settings.model_name,
-            generation_config=self.settings.generation_config.model_dump()
-        )
-        return model.start_chat(history=[])
+        try:
+            generation_config = self.settings.generation_config.model_dump()
+            logger.debug("creating_chat", generation_config=generation_config)
+            
+            model = genai.GenerativeModel(
+                model_name=self.settings.model_name,
+                generation_config=generation_config
+            )
+            chat = model.start_chat(history=[])
+            logger.debug("chat_created")
+            return chat
+        except Exception as e:
+            logger.error("chat_creation_error", error=str(e))
+            raise
     
     def send_message(self, message: str) -> str:
         """Send a message to the model and return its response."""
         try:
             logger.debug("sending_message", message=message)
             response = self.chat.send_message(message)
+            if not response or not response.text:
+                logger.error("empty_response")
+                raise ValueError("Received empty response from Gemini")
+            
             logger.debug("received_response", response=response.text)
             return str(response.text)
         except Exception as e:
@@ -50,8 +71,8 @@ class ChatSession:
         style = "bold cyan" if is_user else "bold green"
         console.print(f"\n{prefix}", style=style)
         
-        # Try to render as markdown, fallback to plain text
-        try:
+        # Handle markdown formatting for bot responses
+        if not is_user:
             console.print(Markdown(message))
-        except Exception:
+        else:
             console.print(message)

@@ -13,7 +13,6 @@ class GenerationConfig(BaseModel):
     top_p: float = Field(0.95, ge=0.0, le=1.0)
     top_k: int = Field(64, ge=1)
     max_output_tokens: int = Field(8192, ge=1)
-    response_mime_type: str = Field("text/plain")
 
     class Config:
         validate_assignment = True
@@ -25,13 +24,18 @@ def create_default_config() -> GenerationConfig:
         temperature=1.0,
         top_p=0.95,
         top_k=64,
-        max_output_tokens=8192,
-        response_mime_type="text/plain"
+        max_output_tokens=8192
     )
 
 
 class Settings(BaseSettings):
-    """Application settings."""
+    """Application settings.
+    
+    Environment variables:
+        GEMINI_API_KEY: API key for Gemini (required)
+        MODEL_NAME: Name of the Gemini model to use (required)
+        LOG_LEVEL: Logging level (default: INFO)
+    """
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -40,10 +44,31 @@ class Settings(BaseSettings):
         protected_namespaces=('settings_',)
     )
 
-    gemini_api_key: str = Field(..., description="Gemini API key")
-    model_name: str = Field("gemini-exp-1121", description="Model name to use")
-    generation_config: GenerationConfig = Field(default_factory=create_default_config)
-    log_level: str = Field("INFO", description="Logging level")
+    # Required settings
+    gemini_api_key: str = Field(
+        ...,  # ... means required
+        description="Gemini API key",
+        env="GEMINI_API_KEY"
+    )
+    
+    model_name: str = Field(
+        ...,  # Make it required instead of providing a default
+        description="Model name to use",
+        env="MODEL_NAME"
+    )
+
+    # Optional settings with defaults
+    log_level: str = Field(
+        "INFO",
+        description="Logging level",
+        env="LOG_LEVEL"
+    )
+
+    # Generation config with defaults
+    generation_config: GenerationConfig = Field(
+        default_factory=create_default_config,
+        description="Model generation configuration"
+    )
 
 
 @lru_cache()

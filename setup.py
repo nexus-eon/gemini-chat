@@ -13,5 +13,6 @@ setup(
         "pydantic>=2.6.1",
         "pydantic-settings>=2.0.0",
         "structlog>=24.1.0",
+        "flask>=3.0.0",
     ],
 )
