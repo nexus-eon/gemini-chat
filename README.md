@@ -5,36 +5,48 @@ A modern, interactive chat application using Google's Gemini AI model, featuring
 ## Features
 
 - 🌐 Modern web interface with real-time chat
-- 🚀 Modern Python packaging with `pyproject.toml`
+- 🚀 Modern Python packaging with PDM and `pyproject.toml`
 - 🔒 Secure environment variable handling
 - 📝 Rich terminal output with markdown support
 - 🎨 Type hints and validation with Pydantic
-- 📊 Structured logging
-- 🖥️ User-friendly CLI interface
+- 📊 Structured logging with `structlog`
+- 🖥️ User-friendly CLI interface with `typer`
 - ⚡ Async-ready architecture
 - 🔄 Rate limit handling and user feedback
 - 🐛 Comprehensive error handling and logging
+- ✨ Code quality tools (ruff, black, isort)
+- 🧪 Testing with pytest
 
 ## Prerequisites
 
-- Python 3.12 or higher
-- Virtual environment
+- Python 3.9 or higher
+- [PDM](https://pdm.fming.dev/) package manager
 
 ## Installation
 
-### 1. Create and activate a virtual environment
+### 1. Install PDM (if not already installed)
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Unix/macOS
-# or
-venv\Scripts\activate  # On Windows
+# Using pip
+pip install --user pdm
+
+# On macOS using Homebrew
+brew install pdm
+
+# On Linux using your package manager
+# Example for Ubuntu/Debian:
+sudo apt install pdm
 ```
 
-### 2. Install the package in editable mode
+### 2. Clone and Install
 
 ```bash
-pip install -e .
+# Clone the repository
+git clone https://github.com/yourusername/gemini-chat.git
+cd gemini-chat
+
+# Install dependencies and create virtual environment
+pdm install
 ```
 
 ### 3. Set up your environment
@@ -43,11 +55,11 @@ Create a `.env` file with the following content:
 
 ```bash
 GEMINI_API_KEY=your_api_key_here
-MODEL_NAME=gemini-exp-1121
+MODEL_NAME=gemini-pro
 LOG_LEVEL=INFO
 ```
 
-Replace `your_api_key_here` with your actual Gemini API key.
+Replace `your_api_key_here` with your actual [Google AI Studio API key](https://makersuite.google.com/app/apikey).
 
 ## Usage
 
@@ -56,11 +68,10 @@ Replace `your_api_key_here` with your actual Gemini API key.
 Start the web interface with:
 
 ```bash
-python -m gemini_chat web
+pdm run start-web
 ```
 
 Options:
-
 - `--host`: Host to bind to (default: 0.0.0.0)
 - `--port`, `-p`: Port to bind to (default: 5000)
 - `--debug`, `-d`: Enable debug mode
@@ -72,36 +83,53 @@ Then open <http://localhost:5000> in your browser.
 Start the CLI chat application:
 
 ```bash
-python -m gemini_chat chat
+pdm run start
 ```
 
 Options:
-
 - `--debug`: Enable debug logging
 - `--version`: Show version information
 
 ## Development
 
-This project uses modern Python development tools:
+This project uses modern Python development tools and practices:
 
-- **Flask**: Web framework
+### Core Dependencies
+- **Flask**: Web framework for the chat interface
 - **Pydantic**: Data validation and settings management
-- **Typer**: CLI interface
-- **Rich**: Terminal formatting
+- **Typer**: Type-safe command line interfaces
+- **Rich**: Beautiful terminal formatting
 - **structlog**: Structured logging
+- **google-generativeai**: Google's Gemini AI API
+
+### Development Tools
+- **PDM**: Modern Python package manager
 - **mypy**: Static type checking
+- **pytest**: Testing framework
+- **ruff**: Fast Python linter
+- **black**: Code formatter
+- **isort**: Import sorter
 
 ### Development Commands
 
 ```bash
+# Install development dependencies
+pdm install --dev
+
 # Run type checking
-mypy src/gemini_chat
+pdm run mypy
 
-# Install in development mode
-pip install -e .
+# Run tests
+pdm run test
 
-# Run the web interface in debug mode
-python -m gemini_chat web --debug
+# Run linting
+pdm run lint
+
+# Format code
+pdm run format
+
+# Start web interface in debug mode
+pdm run start-web --debug
 ```
 
 ## Project Structure
@@ -110,33 +138,49 @@ python -m gemini_chat web --debug
 gemini_chat/
 ├── src/
 │   └── gemini_chat/
-│       ├── __init__.py
-│       ├── __main__.py
-│       ├── cli.py          # CLI implementation
-│       ├── web.py         # Web interface
-│       ├── chat.py        # Core chat functionality
-│       ├── config.py      # Configuration management
-│       ├── static/        # Web static files
+│       ├── __init__.py      # Package initialization
+│       ├── __main__.py      # Entry point
+│       ├── cli.py           # CLI implementation
+│       ├── web.py           # Web interface
+│       ├── chat.py          # Core chat functionality
+│       ├── config.py        # Configuration management
+│       ├── py.typed         # Type checking marker
+│       ├── static/          # Web static files
 │       │   ├── script.js
 │       │   └── style.css
-│       └── templates/     # Web templates
+│       └── templates/       # Web templates
 │           └── index.html
-├── .env                  # Environment variables
-├── .gitignore
-├── README.md
-└── setup.py             # Package configuration
+├── tests/                   # Test directory
+├── .env                     # Local environment variables
+├── .env.example            # Example environment file
+├── .gitignore              # Git ignore patterns
+├── mypy.ini                # Type checking configuration
+├── pyproject.toml          # Project configuration
+├── pdm.lock                # Lock file for dependencies
+└── README.md               # This file
 ```
 
 ## Error Handling
 
 The application includes comprehensive error handling for:
-
 - Rate limiting from the Gemini API
-- Network issues
-- Invalid API keys
+- Network connectivity issues
+- Invalid API keys or configuration
 - Malformed requests
 - Server errors
 
+Each error is properly logged with context and presented to the user with helpful messages.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests and linting (`pdm run test && pdm run lint`)
+5. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
 ## License
 
-MIT License
+MIT License - See LICENSE file for details
