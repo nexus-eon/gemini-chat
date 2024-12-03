@@ -41,3 +41,19 @@ env/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Type checking
+.mypy_cache/
+.pytype/
+.pyre/
+.dmypy.json
+dmypy.json
+mypy_output.txt
+
+# Test coverage
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.pytest_cache/
+htmlcov/

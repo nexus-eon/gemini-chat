@@ -1,0 +1,60 @@
+Mypy Analysis Report
+
+Total Errors: 41 errors in 7 files
+Files Checked: 11 source files
+
+Error Categories:
+
+1. Missing Type Stubs (2 errors):
+- google.generativeai: missing library stubs or py.typed marker
+- google.generativeai.types: missing library stubs or py.typed marker
+
+2. Type Annotation Issues (25 errors):
+a) Missing Function Return Types:
+- Multiple test functions across test_web.py, test_config.py, test_chat.py, conftest.py
+- Most can be fixed by adding "-> None" for void functions
+
+b) Missing Variable Types:
+- chat.py: "history" needs type annotation
+
+3. Return Type Mismatches (7 errors):
+- web.py: Multiple instances of returning tuple[Any, int] where Response is expected
+- chat.py: Returning Any where str is expected
+
+4. Argument Type Errors (1 error):
+- test_config.py: Passing str where SecretStr is expected
+
+5. Import/Module Issues (1 error):
+- cli.py: Incorrect attribute reference (run_web_app vs run_app)
+
+6. Name Definition Issues (1 error):
+- conftest.py: MagicMock not defined
+
+Recommendations:
+
+1. Add Type Stubs:
+   - Create type stubs for google.generativeai or use alternative typing approach
+   - Consider using Protocol classes for third-party modules without types
+
+2. Fix Type Annotations:
+   - Add return type annotations to all test functions
+   - Add proper type hints for class variables
+   - Use -> None for void functions
+
+3. Fix Return Types in web.py:
+   - Ensure all routes return proper Response objects
+   - Create proper type aliases or wrapper functions for jsonify responses
+
+4. Fix Argument Types:
+   - Update test_config.py to use SecretStr instead of str
+
+5. Fix Module Issues:
+   - Update cli.py to use correct function name (run_app)
+   - Import MagicMock in conftest.py
+
+Priority Order:
+1. Fix basic type annotations (missing return types, variable types)
+2. Fix return type mismatches in web.py
+3. Fix argument type errors
+4. Address missing type stubs
+5. Fix import and module issues

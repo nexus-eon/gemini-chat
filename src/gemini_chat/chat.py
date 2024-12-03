@@ -3,10 +3,9 @@ from typing import List, Dict, cast
 import re
 
 import structlog
-import google.generativeai as genai  # type: ignore
-from google.generativeai.types import GenerateContentResponse  # type: ignore
-from google.api_core import exceptions  # type: ignore
-
+import google.generativeai as genai
+from google.generativeai.types import GenerateContentResponse
+from google.api_core.exceptions import ResourceExhausted
 from .config import Settings
 
 logger = structlog.get_logger()
@@ -75,7 +74,7 @@ class ChatSession:
                         response_length=len(response_text))
             return response_text
 
-        except exceptions.ResourceExhausted as e:
+        except ResourceExhausted as e:
             logger.warning("rate_limit_exceeded", error=str(e))
             # Extract wait time from error message if available
             wait_time_match = re.search(r'try again in about (\d+) \w+', str(e))

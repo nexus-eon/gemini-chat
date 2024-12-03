@@ -26,8 +26,8 @@ class Settings(BaseSettings):
         protected_namespaces=('settings_',),
     )
 
-    gemini_api_key: SecretStr = Field(..., description="API key for Gemini model")
-    model_name: str = Field(..., description="Name of the model to use")
+    gemini_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="GEMINI_API_KEY", description="API key for Gemini model")
+    model_name: str = Field(default="gemini-pro", validation_alias="MODEL_NAME", description="Name of the model to use")
     log_level: str = Field(default="INFO", description="Logging level")
     generation_config: GenerationConfig = Field(default_factory=GenerationConfig)
 
