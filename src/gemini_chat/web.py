@@ -72,3 +72,7 @@ def run_app(host: str = '0.0.0.0', port: int = 5000, debug: bool = False) -> Non
     """Run the Flask application."""
     app = create_app()
     app.run(host=host, port=port, debug=debug)
+
+
+if __name__ == '__main__':
+    run_app(debug=True)
