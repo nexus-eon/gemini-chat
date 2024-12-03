@@ -10,7 +10,7 @@ from rich.console import Console
 from . import __version__
 from .chat import ChatSession
 from .config import Settings
-from .web import run_web_app
+from .web import run_app
 
 app = typer.Typer(help="Interactive chat application using Google's Gemini AI model")
 console = Console()
@@ -44,16 +44,22 @@ def chat(debug: bool = typer.Option(False, "--debug", "-d", help="Enable debug l
 
 
 @app.command()
-def web() -> None:
+def web(
+    host: str = typer.Option("0.0.0.0", "--host", help="Host to bind to"),
+    port: int = typer.Option(5000, "--port", "-p", help="Port to bind to"),
+    debug: bool = typer.Option(False, "--debug", "-d", help="Enable debug mode")
+) -> None:
     """Start the web interface"""
-    console.print("Starting web interface at http://localhost:5000")
-    run_web_app()
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+        
+    console.print(f"Starting web interface at http://{host}:{port}")
+    run_app(host=host, port=port, debug=debug)
 
 
 @app.callback()
 def callback(version: Optional[bool] = typer.Option(None, "--version", callback=version_callback, is_eager=True)) -> None:
     """Show version information and exit."""
-    pass
 
 
 def main() -> None:

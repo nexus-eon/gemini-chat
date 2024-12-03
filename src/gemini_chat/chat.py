@@ -1,78 +1,91 @@
-"""Chat functionality implementation."""
-from typing import Any, Optional
+"""Chat session management."""
+from typing import List, Dict, cast
+import re
 
-import google.generativeai as genai  # type: ignore
 import structlog
-from rich.console import Console
-from rich.markdown import Markdown
+import google.generativeai as genai  # type: ignore
+from google.generativeai.types import GenerateContentResponse  # type: ignore
+from google.api_core import exceptions  # type: ignore
 
-from .config import Settings, get_settings
+from .config import Settings
 
 logger = structlog.get_logger()
-console = Console()
+
+# Type aliases
+Message = Dict[str, str]
+History = List[Message]
+
+
+class RateLimitError(Exception):
+    """Raised when the API rate limit is exceeded."""
+    pass
 
 
 class ChatSession:
     """Manages a chat session with the Gemini model."""
 
-    def __init__(self, settings: Optional[Settings] = None) -> None:
-        """Initialize chat session."""
-        self.settings = settings or get_settings()
-        logger.debug("initializing_chat_session", 
-                    model_name=self.settings.model_name,
-                    api_key_length=len(self.settings.gemini_api_key) if self.settings.gemini_api_key else 0)
-        self._setup_gemini()
-        self.chat: Any = self._create_chat()
-        
-    def _setup_gemini(self) -> None:
-        """Configure Gemini with API key and generation settings."""
+    def __init__(self, settings: Settings) -> None:
+        """Initialize a chat session."""
         try:
-            genai.configure(api_key=self.settings.gemini_api_key)
-            logger.debug("gemini_configured")
-        except Exception as e:
-            logger.error("gemini_configuration_error", error=str(e))
-            raise
-        
-    def _create_chat(self) -> Any:
-        """Create and return a new chat session."""
-        try:
-            generation_config = self.settings.generation_config.model_dump()
-            logger.debug("creating_chat", generation_config=generation_config)
-            
+            logger.debug("initializing_chat_session",
+                        api_key_length=len(settings.gemini_api_key.get_secret_value()),
+                        model_name=settings.model_name)
+
+            self.settings: Settings = settings
+            self.history: History = []
+
+            # Configure the Gemini API
+            genai.configure(api_key=settings.gemini_api_key.get_secret_value())
+
+            # Configure the Gemini model
             model = genai.GenerativeModel(
-                model_name=self.settings.model_name,
-                generation_config=generation_config
-            )
-            chat = model.start_chat(history=[])
+                model_name=settings.model_name,
+                generation_config=settings.generation_config.model_dump())
+
+            logger.debug("gemini_configured")
+
+            # Start a chat
+            logger.debug("creating_chat",
+                        generation_config=settings.generation_config.model_dump())
+            self.chat = model.start_chat()
             logger.debug("chat_created")
-            return chat
+
         except Exception as e:
-            logger.error("chat_creation_error", error=str(e))
+            logger.error("initialization_error", error=str(e))
             raise
-    
+
     def send_message(self, message: str) -> str:
         """Send a message to the model and return its response."""
         try:
             logger.debug("sending_message", message=message)
             response = self.chat.send_message(message)
-            if not response or not response.text:
-                logger.error("empty_response")
-                raise ValueError("Received empty response from Gemini")
-            
-            logger.debug("received_response", response=response.text)
-            return str(response.text)
+
+            if not response or not isinstance(response, GenerateContentResponse):
+                raise ValueError("Invalid response from model")
+
+            # Cast the response text to str to satisfy mypy
+            response_text = cast(str, response.text)
+
+            # Store the message and response in history
+            self.history.append({"role": "user", "content": message})
+            self.history.append({"role": "assistant", "content": response_text})
+
+            logger.debug("message_sent",
+                        message=message,
+                        response_length=len(response_text))
+            return response_text
+
+        except exceptions.ResourceExhausted as e:
+            logger.warning("rate_limit_exceeded", error=str(e))
+            # Extract wait time from error message if available
+            wait_time_match = re.search(r'try again in about (\d+) \w+', str(e))
+            wait_time = wait_time_match.group(1) if wait_time_match else "60"
+            raise RateLimitError(f"Rate limit exceeded. Please try again in {wait_time} minutes.")
+
         except Exception as e:
             logger.error("message_error", error=str(e))
             raise
 
-    def display_message(self, message: str, is_user: bool = False) -> None:
-        """Display a message in the console with proper formatting."""
-        prefix = "You:" if is_user else "Gemini:"
-        style = "bold cyan" if is_user else "bold green"
-        console.print(f"\n{prefix}", style=style)
-        
-        # Handle markdown formatting for bot responses
-        if not is_user:
-            console.print(Markdown(message))
-        else:
-            console.print(message)
+    def get_history(self) -> History:
+        """Get the chat history."""
+        return self.history.copy()

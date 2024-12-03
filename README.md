@@ -53,13 +53,19 @@ Replace `your_api_key_here` with your actual Gemini API key.
 
 ### Web Interface
 
-Start the web interface:
+Start the web interface with:
 
 ```bash
 python -m gemini_chat web
 ```
 
-Then open http://localhost:5000 in your browser.
+Options:
+
+- `--host`: Host to bind to (default: 0.0.0.0)
+- `--port`, `-p`: Port to bind to (default: 5000)
+- `--debug`, `-d`: Enable debug mode
+
+Then open <http://localhost:5000> in your browser.
 
 ### CLI Interface
 
@@ -100,7 +106,7 @@ python -m gemini_chat web --debug
 
 ## Project Structure
 
-```
+```plaintext
 gemini_chat/
 ├── src/
 │   └── gemini_chat/
@@ -124,6 +130,7 @@ gemini_chat/
 ## Error Handling
 
 The application includes comprehensive error handling for:
+
 - Rate limiting from the Gemini API
 - Network issues
 - Invalid API keys
